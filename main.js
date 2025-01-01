@@ -1,8 +1,19 @@
 const { app, BrowserWindow, screen, ipcMain, dialog } = require("electron");
 const path = require("path");
-
+const os = require("os");
+const fs = require("fs");
 let mainWindow;
 let numberOfDisplays = 0;
+
+// Check if we're running from webpack bundle
+const isProduction = typeof IS_PROD !== "undefined" && IS_PROD;
+
+function createTempHtml() {
+  // Create temp html file only in production
+  tempHtmlPath = path.join(os.tmpdir(), `proctoring-${Date.now()}.html`);
+  fs.writeFileSync(tempHtmlPath, INLINE_HTML);
+  return tempHtmlPath;
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -17,7 +28,12 @@ function createWindow() {
     },
   });
 
-  mainWindow.loadFile("index.html");
+  if (isProduction) {
+    const htmlPath = createTempHtml();
+    mainWindow.loadFile(htmlPath);
+  } else {
+    mainWindow.loadFile("index.html");
+  }
 
   // Check displays every 10 seconds
   setInterval(updateDisplayInfo, 10000);
@@ -84,5 +100,15 @@ app.on("window-all-closed", () => {
 app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
+  }
+});
+
+app.on("will-quit", () => {
+  if (isProduction && tempHtmlPath) {
+    try {
+      fs.unlinkSync(tempHtmlPath);
+    } catch (err) {
+      console.error("Error cleaning up:", err);
+    }
   }
 });
