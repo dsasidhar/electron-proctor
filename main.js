@@ -35,6 +35,10 @@ function createWindow() {
     mainWindow.loadFile("index.html");
   }
 
+  mainWindow.setVisibleOnAllWorkspaces(true, {
+    visibleOnFullScreen: true,
+  });
+
   // Check displays every 10 seconds
   setInterval(updateDisplayInfo, 10000);
   updateDisplayInfo();
