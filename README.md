@@ -1,6 +1,5 @@
 ```bash
 npm install
-npm start
 ```
 
 On Unix based systems, download `run/run-proctor.sh` add execute permissions and run it.
